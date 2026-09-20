@@ -28,6 +28,8 @@ export interface ProcessCustomerMessageParams {
   externalMessageId?: string | null;
   customerName?: string;
   customerAddress?: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 /**
@@ -38,7 +40,7 @@ export async function processCustomerMessage(
   params: ProcessCustomerMessageParams
 ): Promise<ProcessMessageResult> {
   const startTime = Date.now();
-  const { source, customerPhone, message, externalMessageId, customerName, customerAddress } = params;
+  const { source, customerPhone, message, externalMessageId, customerName, customerAddress, latitude, longitude } = params;
 
   // 1. Initialize Agent Run & Trace
   const agentRun = await createAgentRun({
@@ -57,6 +59,10 @@ export async function processCustomerMessage(
   try {
     // 2. Resolve or Create Customer
     const customer = await getOrCreateCustomer(customerPhone, customerName, customerAddress);
+    if (latitude && longitude) {
+      customer.latitude = latitude;
+      customer.longitude = longitude;
+    }
     await updateAgentRun(agentRun.id, { customer_id: customer.id });
 
     await recordAgentEvent(agentRun.id, 'CUSTOMER_RESOLVED', 'SUCCESS', {
@@ -142,7 +148,9 @@ export async function processCustomerMessage(
           orderResult.order_id!,
           orderResult.items!,
           orderResult.total_paise!,
-          pending.pending_state.original_intent.delivery_requested
+          pending.pending_state.original_intent.delivery_requested,
+          customer.address,
+          customer.name
         );
 
         await recordAgentEvent(agentRun.id, 'CONFIRMATION_SENT', 'SUCCESS', {
@@ -344,7 +352,9 @@ Rider aapke ghar ke paas hai. Kirana store: +91 9981154672.`;
         orderResult.order_id!,
         orderResult.items!,
         orderResult.total_paise!,
-        true // delivery
+        true, // delivery
+        customer.address,
+        customer.name
       );
 
       const latency = Date.now() - startTime;
@@ -391,16 +401,21 @@ Rider aapke ghar ke paas hai. Kirana store: +91 9981154672.`;
     const outOfStockItems: Array<{ product: Product; quantity: number; raw_name: string }> = [];
 
     for (const item of parsedIntent.items) {
-      // Find candidate matches from live DB
-      const candidates = await searchProductCandidates(item.raw_name);
+      // Find candidate matches from live DB using full search query
+      const searchTerms = [item.raw_name, item.brand, item.pack_size].filter(Boolean).join(' ');
+      let candidates = await searchProductCandidates(searchTerms);
+      if (candidates.length === 0 && searchTerms !== item.raw_name) {
+        candidates = await searchProductCandidates(item.raw_name);
+      }
 
       await recordAgentEvent(agentRun.id, 'INVENTORY_QUERIED', 'INFO', {
         query: item.raw_name,
+        search_terms: searchTerms,
         candidates_found: candidates.length,
         candidate_names: candidates.map(c => c.name)
       });
 
-      const disambiguation = await disambiguateProductCandidate(item.raw_name, candidates);
+      const disambiguation = await disambiguateProductCandidate(searchTerms || item.raw_name, candidates);
 
       if (disambiguation.result === 'MATCH' && disambiguation.product_id) {
         const matchedProduct = candidates.find(c => c.id === disambiguation.product_id)!;
@@ -520,7 +535,7 @@ Rider aapke ghar ke paas hai. Kirana store: +91 9981154672.`;
       customer.address ||
       (parsedIntent.delivery_requested ? 'Flat 402, Green Valley Apartments, Sector 14, Gurugram' : null);
 
-    if (finalDeliveryAddress && !customer.address) {
+    if (finalDeliveryAddress && (!customer.address || customer.address !== finalDeliveryAddress)) {
       customer.address = finalDeliveryAddress;
     }
 
@@ -530,6 +545,8 @@ Rider aapke ghar ke paas hai. Kirana store: +91 9981154672.`;
       rawMessage: message,
       externalMessageId: externalMessageId || `web_${Date.now()}`,
       deliveryAddress: finalDeliveryAddress,
+      latitude: latitude || customer.latitude || null,
+      longitude: longitude || customer.longitude || null,
       items: resolvedItems.map(ri => ({
         product_id: ri.product_id,
         quantity: ri.quantity
@@ -591,7 +608,8 @@ Rider aapke ghar ke paas hai. Kirana store: +91 9981154672.`;
       orderResult.items!,
       orderResult.total_paise!,
       parsedIntent.delivery_requested,
-      finalDeliveryAddress
+      finalDeliveryAddress,
+      customer.name
     );
 
     await recordAgentEvent(agentRun.id, 'CONFIRMATION_SENT', 'SUCCESS', {

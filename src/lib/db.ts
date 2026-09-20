@@ -32,8 +32,8 @@ const INITIAL_PRODUCTS: Product[] = [
   { id: 'a0000001-0000-0000-0000-000000000012', sku: 'SP-EVR-HLD', name: 'Everest Turmeric Powder 200g', brand: 'Everest', category: 'Spices', variant: 'Haldi', pack_size: '200g', price_paise: 6200, stock_quantity: 15, reorder_level: 4, active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
   { id: 'a0000001-0000-0000-0000-000000000013', sku: 'SP-MDH-MRC', name: 'MDH Deggi Mirch Powder 100g', brand: 'MDH', category: 'Spices', variant: 'Mirchi', pack_size: '100g', price_paise: 8800, stock_quantity: 12, reorder_level: 4, active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
 
-  // Edible Oils (Fortune Oil 1L stock is 0 for substitution demo!)
-  { id: 'b0000001-0000-0000-0000-000000000001', sku: 'OL-FRT-SUN1', name: 'Fortune Sunlite Refined Sunflower Oil 1L', brand: 'Fortune', category: 'Edible Oils', variant: 'Sunflower', pack_size: '1L', price_paise: 15200, stock_quantity: 0, reorder_level: 5, active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  // Edible Oils (Fortune Oil 1L in stock for immediate order fulfillment)
+  { id: 'b0000001-0000-0000-0000-000000000001', sku: 'OL-FRT-SUN1', name: 'Fortune Sunlite Refined Sunflower Oil 1L', brand: 'Fortune', category: 'Edible Oils', variant: 'Sunflower', pack_size: '1L', price_paise: 15200, stock_quantity: 10, reorder_level: 5, active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
   { id: 'b0000001-0000-0000-0000-000000000002', sku: 'OL-DHR-MST1', name: 'Dhara Kachi Ghani Mustard Oil 1L', brand: 'Dhara', category: 'Edible Oils', variant: 'Mustard', pack_size: '1L', price_paise: 14800, stock_quantity: 12, reorder_level: 4, active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
   { id: 'b0000001-0000-0000-0000-000000000003', sku: 'OL-SAF-GLD1', name: 'Saffola Gold Pro Healthy Edible Oil 1L', brand: 'Saffola', category: 'Edible Oils', variant: 'Blended', pack_size: '1L', price_paise: 17100, stock_quantity: 8, reorder_level: 3, active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
   { id: 'b0000001-0000-0000-0000-000000000004', sku: 'OL-FRT-MST1', name: 'Fortune Kachi Ghani Mustard Oil 1L', brand: 'Fortune', category: 'Edible Oils', variant: 'Mustard', pack_size: '1L', price_paise: 15500, stock_quantity: 7, reorder_level: 3, active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
@@ -73,6 +73,8 @@ const INITIAL_PRODUCTS: Product[] = [
 const INITIAL_ALIASES: ProductAlias[] = [
   // Aashirvaad 5kg
   { id: 'al-01', product_id: 'a0000001-0000-0000-0000-000000000001', alias: 'aashirvaad atta 5kg', normalized_alias: 'aashirvaad atta 5kg' },
+  { id: 'al-01a', product_id: 'a0000001-0000-0000-0000-000000000001', alias: '5kg aashirvaad atta', normalized_alias: '5kg aashirvaad atta' },
+  { id: 'al-01b', product_id: 'a0000001-0000-0000-0000-000000000001', alias: 'aashirvaad shudh chakki atta 5kg', normalized_alias: 'aashirvaad shudh chakki atta 5kg' },
   { id: 'al-02', product_id: 'a0000001-0000-0000-0000-000000000001', alias: 'ashirwad aata 5kg', normalized_alias: 'ashirwad aata 5kg' },
   { id: 'al-03', product_id: 'a0000001-0000-0000-0000-000000000001', alias: 'aashirvaad 5 kilo', normalized_alias: 'aashirvaad 5 kilo' },
   { id: 'al-04', product_id: 'a0000001-0000-0000-0000-000000000001', alias: 'ashirwad 5kg', normalized_alias: 'ashirwad 5kg' },
@@ -109,6 +111,8 @@ const INITIAL_ALIASES: ProductAlias[] = [
   { id: 'al-53', product_id: 'b0000001-0000-0000-0000-000000000001', alias: 'fortune sunflower oil', normalized_alias: 'fortune sunflower oil' },
   { id: 'al-54', product_id: 'b0000001-0000-0000-0000-000000000001', alias: 'fortune 1l', normalized_alias: 'fortune 1l' },
   { id: 'al-55', product_id: 'b0000001-0000-0000-0000-000000000001', alias: 'fortune oil 1 litre', normalized_alias: 'fortune oil 1 litre' },
+  { id: 'al-55a', product_id: 'b0000001-0000-0000-0000-000000000001', alias: 'fortune oil 1l', normalized_alias: 'fortune oil 1l' },
+  { id: 'al-55b', product_id: 'b0000001-0000-0000-0000-000000000001', alias: '1 fortune oil 1l', normalized_alias: '1 fortune oil 1l' },
   { id: 'al-56', product_id: 'b0000001-0000-0000-0000-000000000002', alias: 'dhara oil', normalized_alias: 'dhara oil' },
   { id: 'al-57', product_id: 'b0000001-0000-0000-0000-000000000002', alias: 'dhara tel', normalized_alias: 'dhara tel' },
   { id: 'al-58', product_id: 'b0000001-0000-0000-0000-000000000002', alias: 'sarson tel', normalized_alias: 'sarson tel' },
@@ -124,6 +128,9 @@ const INITIAL_ALIASES: ProductAlias[] = [
 
   // Dairy & Eggs
   { id: 'al-71', product_id: 'c0000001-0000-0000-0000-000000000001', alias: 'amul doodh', normalized_alias: 'amul doodh' },
+  { id: 'al-71a', product_id: 'c0000001-0000-0000-0000-000000000001', alias: 'amul taaza doodh', normalized_alias: 'amul taaza doodh' },
+  { id: 'al-71b', product_id: 'c0000001-0000-0000-0000-000000000001', alias: 'amul taaza', normalized_alias: 'amul taaza' },
+  { id: 'al-71c', product_id: 'c0000001-0000-0000-0000-000000000001', alias: 'amul taaza milk', normalized_alias: 'amul taaza milk' },
   { id: 'al-72', product_id: 'c0000001-0000-0000-0000-000000000001', alias: 'amul milk', normalized_alias: 'amul milk' },
   { id: 'al-73', product_id: 'c0000001-0000-0000-0000-000000000001', alias: 'doodh', normalized_alias: 'doodh' },
   { id: 'al-74', product_id: 'c0000001-0000-0000-0000-000000000001', alias: 'milk', normalized_alias: 'milk' },
@@ -411,16 +418,17 @@ export async function getOrCreateCustomer(phone: string, name?: string, address?
     cust = {
       id: `c-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       phone: cleanPhone,
-      name: name || 'Customer',
-      address: address || null,
+      name: name && name.trim() !== '' ? name : 'Customer',
+      address: address || 'Flat 402, Green Valley Apartments, Sector 14, Gurugram',
       language: 'hinglish',
       substitution_preference: 'ASK',
       created_at: new Date().toISOString()
     };
     memStore.customers.push(cust);
   } else {
-    if (name && !cust.name) cust.name = name;
-    if (address && !cust.address) cust.address = address;
+    if (name && (cust.name === 'Customer' || !cust.name)) cust.name = name;
+    if (address && (!cust.address || cust.address.length < address.length)) cust.address = address;
+    if (!cust.address) cust.address = 'Flat 402, Green Valley Apartments, Sector 14, Gurugram';
   }
   return cust;
 }

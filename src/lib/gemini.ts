@@ -307,12 +307,15 @@ If none fit, return NO_MATCH.`;
     return { candidate: c, score };
   });
 
-  scored.sort((a, b) => b.score - a.score);
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return b.candidate.stock_quantity - a.candidate.stock_quantity;
+  });
 
   if (scored.length > 0 && scored[0].score >= 20) {
     const top = scored[0];
     const second = scored[1];
-    if (!second || top.score > second.score + 5) {
+    if (!second || top.score > second.score || (top.score === second.score && top.candidate.stock_quantity > 0) || (top.score === second.score && top.candidate.id)) {
       return {
         result: 'MATCH',
         product_id: top.candidate.id,
@@ -359,10 +362,12 @@ export function formatOrderConfirmationMessage(
   items: Array<{ name: string; quantity: number; unit_price_paise: number; line_total_paise: number }>,
   totalPaise: number,
   deliveryRequested: boolean,
-  deliveryAddress?: string | null
+  deliveryAddress?: string | null,
+  customerName?: string | null
 ): string {
   const lines: string[] = [];
-  lines.push(`✅ *Order Confirmed!* (Order #${orderId.slice(-6).toUpperCase()})\n`);
+  const greeting = customerName && customerName !== 'Customer' ? `Namaste ${customerName} ji! 🙏\n\n` : `Namaste! 🙏\n\n`;
+  lines.push(`${greeting}✅ *Order Confirmed!* (Order #${orderId.slice(-6).toUpperCase()})\n`);
   
   for (const item of items) {
     const unitINR = (item.unit_price_paise / 100).toFixed(0);
@@ -473,17 +478,47 @@ function fallbackHinglishParser(text: string): OrderIntent {
     .replace(/\b(sarson\s+tel|sarso\s+tel|sarson\s+oil|sarso\s+oil)\b/g, 'sarson tel')
     .replace(/\b(tel)\b/g, 'oil');
 
-  // 4. Extraction Patterns for Grocery Items
-  const deliveryRequested = lower.includes('ghar') || lower.includes('deliver') || lower.includes('bhej dena') || lower.includes('bhejna') || lower.includes('bhejdo');
+  // 4. Extraction Patterns for Grocery Items (Multi-line, Bulleted, or Delimited)
+  const deliveryRequested =
+    lower.includes('ghar') ||
+    lower.includes('deliver') ||
+    lower.includes('bhej dena') ||
+    lower.includes('bhejna') ||
+    lower.includes('bhejdo') ||
+    lower.includes('bhej do');
 
   const items: OrderIntent['items'] = [];
 
-  // Split by comma, "aur", "and", "+"
-  const parts = normalized.split(/,|(?:\baur\b)|(?:\band\b)|\+/g);
+  // Split by newlines, bullet points (•), dashes (-), asterisks (*), numbered items (1., 2.), commas, "aur", "and", "+"
+  const rawParts = normalized.split(/\r?\n|[•\*\-]|\b(?:\d+\.)\s*|,|(?:\baur\b)|(?:\band\b)|\+/g);
 
-  for (const rawPart of parts) {
-    const part = rawPart.trim();
-    if (!part) continue;
+  // Common conversational filler / greeting phrases to ignore
+  const fillerPatterns = [
+    /^namaste/i,
+    /^hello/i,
+    /^hi\b/i,
+    /^bhaiya\b/i,
+    /^mujhe\s+(?:ye\s+)?samaan\s+chahiye/i,
+    /^ye\s+samaan\s+chahiye/i,
+    /^samaan\s+chahiye/i,
+    /^order\s+(?:likho|lena|karna)/i,
+    /^ghar\s+bhej\s+(?:do|dena|dijiye)/i,
+    /^jaldi\s+bhej\s+(?:do|dena)/i,
+    /^please\b/i,
+    /^dhanyawad/i,
+    /^shukriya/i,
+    /^thank/i
+  ];
+
+  for (const rawPart of rawParts) {
+    let part = rawPart.trim();
+    if (!part || part.length < 2) continue;
+
+    // Check if this line is purely a conversational greeting/closing
+    const isFiller = fillerPatterns.some(p => p.test(part));
+    if (isFiller && !part.match(/\d+/) && !part.match(/(?:doodh|milk|oil|tel|atta|bread|maggi|sugar|chini|namak|dal|rice|chawal|butter|eggs|ande)/i)) {
+      continue;
+    }
 
     // Detect pack size: weights, volumes, trays, multi-packs
     let packSize: string | null = null;
@@ -531,11 +566,14 @@ function fallbackHinglishParser(text: string): OrderIntent {
     else if (part.includes('vim')) brand = 'Vim';
     else if (part.includes('dettol')) brand = 'Dettol';
     else if (part.includes('colgate')) brand = 'Colgate';
+    else if (part.includes('harvest gold')) brand = 'Harvest Gold';
+    else if (part.includes('britannia')) brand = 'Britannia';
 
     // Clean raw product name (strip quantity numbers and filler words)
     const cleanedRaw = part
-      .replace(/\b(ghar|bhej|dena|bhejna|bhejdo|chahiye|laana|packet|kilo|kg|litre|l|liter|wale|wali|ka|ki|ke|ek|do|teen|chaar|panch|paanch)\b/gi, '')
-      .replace(/^\s*\d+\s*(?:packet|pack)?\s*/i, '') // strip leading quantity digits & units
+      .replace(/\b(namaste|bhaiya|mujhe|ye|samaan|chahiye|ghar|bhej|dena|bhejna|bhejdo|laana|packet|packets|kilo|kg|litre|liter|l|ml|wale|wali|ka|ki|ke|ek|do|teen|chaar|panch|paanch|please)\b/gi, '')
+      .replace(/^\s*\d+\s*(?:packet|packets|pack)?\s*/i, '') // strip leading quantity digits & units
+      .replace(/[•\*\-]/g, '')
       .replace(/\s+/g, ' ')
       .trim();
 

@@ -122,12 +122,26 @@ async function startWhatsAppBridge() {
       const jid = msg.key.remoteJid;
       if (!jid || jid.endsWith('@g.us')) continue; // skip group chats
 
-      // Extract message text
-      const text =
+      // Extract message text and location
+      let text =
         msg.message?.conversation ||
         msg.message?.extendedTextMessage?.text ||
         msg.message?.imageMessage?.caption ||
         '';
+
+      const loc = msg.message?.locationMessage || msg.message?.liveLocationMessage;
+      let latitude: number | null = null;
+      let longitude: number | null = null;
+      let locationAddress: string | null = null;
+
+      if (loc) {
+        latitude = loc.degreesLatitude || null;
+        longitude = loc.degreesLongitude || null;
+        locationAddress = (loc as any).address || (loc as any).name || (loc as any).caption || `GPS: ${latitude}, ${longitude}`;
+        if (!text.trim()) {
+          text = `Delivery location: ${locationAddress}`;
+        }
+      }
 
       if (!text.trim()) continue;
 
@@ -145,7 +159,10 @@ async function startWhatsAppBridge() {
           customerPhone: `+${senderPhone}`,
           message: text,
           externalMessageId: msg.key.id || `baileys_${Date.now()}`,
-          customerName: pushName
+          customerName: pushName,
+          customerAddress: locationAddress || undefined,
+          latitude,
+          longitude
         });
 
         console.log(`🤖 KiranaPilot reply (${result.action_taken}):\n${result.reply_message}`);
