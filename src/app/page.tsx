@@ -551,9 +551,9 @@ export default function CustomerStorefront() {
       {isCartOpen && (
         <div
           onClick={(e) => { if (e.target === e.currentTarget) setIsCartOpen(false); }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4 backdrop-blur-xs overflow-y-auto"
         >
-          <div className="relative w-full max-w-lg rounded-2xl border border-stone-200 bg-white p-6 shadow-2xl animate-fade-in">
+          <div className="relative w-full max-w-lg my-auto max-h-[90vh] overflow-y-auto rounded-2xl border border-stone-200 bg-white p-6 shadow-2xl animate-fade-in">
             <div className="flex items-center justify-between border-b border-stone-100 pb-3">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="h-5 w-5 text-emerald-600" />
@@ -751,9 +751,9 @@ export default function CustomerStorefront() {
       {orderSuccess && (
         <div
           onClick={(e) => { if (e.target === e.currentTarget) setOrderSuccess(null); }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4 backdrop-blur-xs animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4 backdrop-blur-xs animate-fade-in overflow-y-auto"
         >
-          <div className="relative w-full max-w-lg rounded-2xl border border-emerald-300 bg-white p-6 shadow-2xl">
+          <div className="relative w-full max-w-lg my-auto max-h-[90vh] overflow-y-auto rounded-2xl border border-emerald-300 bg-white p-6 shadow-2xl">
             {/* Close Button */}
             <button
               onClick={() => setOrderSuccess(null)}
