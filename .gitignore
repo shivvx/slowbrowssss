@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+data/auth_info_baileys/
 
 # debug
 npm-debug.log*

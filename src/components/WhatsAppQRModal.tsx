@@ -28,10 +28,11 @@ export default function WhatsAppQRModal({
   onClose,
   storePhone = '9981154672'
 }: WhatsAppQRModalProps) {
-  const [activeTab, setActiveTab] = useState<'COUNTER_POSTER' | 'PAIR_PHONE' | 'SIMULATOR'>('COUNTER_POSTER');
+  const [activeTab, setActiveTab] = useState<'PAIR_PHONE' | 'COUNTER_POSTER' | 'SIMULATOR'>('PAIR_PHONE');
   const [counterQrUrl, setCounterQrUrl] = useState<string>('');
-  const [deviceQrUrl, setDeviceQrUrl] = useState<string>('');
-  const [pairingStatus, setPairingStatus] = useState<'WAITING' | 'CONNECTED'>('CONNECTED');
+  const [liveQr, setLiveQr] = useState<string | null>(null);
+  const [bridgeStatus, setBridgeStatus] = useState<'SCAN_QR' | 'CONNECTED' | 'BRIDGE_OFFLINE' | 'INITIALIZING'>('INITIALIZING');
+  const [connectedPhone, setConnectedPhone] = useState<string | null>(null);
   const [simInput, setSimInput] = useState('2 packet Amul Taaza doodh aur 1 Harvest Gold bread bhej do');
   const [simOutput, setSimOutput] = useState<string | null>(null);
   const [simOrderUrl, setSimOrderUrl] = useState<string | null>(null);
@@ -40,10 +41,9 @@ export default function WhatsAppQRModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    const generateQRs = async () => {
+    // 1. Countertop QR: Official wa.me link with prefilled order prompt
+    const generateCounterQr = async () => {
       try {
-        // 1. Countertop QR: Official wa.me link with prefilled order prompt
-        // ANY camera, Google Lens, or WhatsApp camera scans this and immediately opens chat!
         const waUrl = `https://wa.me/91${storePhone}?text=${encodeURIComponent(
           'Namaste Bhaiya! Mujhe ye samaan chahiye: \n• 2 packet Amul Taaza Doodh\n• 1 Fortune Oil 1L\n• 5kg Aashirvaad Atta\n\nGhar bhej do please!'
         )}`;
@@ -53,21 +53,34 @@ export default function WhatsAppQRModal({
           color: { dark: '#047857', light: '#ffffff' }
         });
         setCounterQrUrl(counterUrl);
-
-        // 2. Direct Store Link QR
-        const storeUrl = `https://slowbrowssss.vercel.app`;
-        const deviceUrl = await QRCode.toDataURL(storeUrl, {
-          width: 280,
-          margin: 2,
-          color: { dark: '#111827', light: '#ffffff' }
-        });
-        setDeviceQrUrl(deviceUrl);
       } catch (err) {
-        console.error('Failed to generate QR codes:', err);
+        console.error('Failed to generate counter QR:', err);
+      }
+    };
+    generateCounterQr();
+
+    // 2. Poll local WhatsApp Web bridge on port 3001
+    const checkLiveBridge = async () => {
+      try {
+        const res = await fetch('/api/whatsapp/live-qr');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.bridge_running) {
+            setBridgeStatus(data.status);
+            if (data.qr) setLiveQr(data.qr);
+            if (data.phone) setConnectedPhone(data.phone);
+          } else {
+            setBridgeStatus('BRIDGE_OFFLINE');
+          }
+        }
+      } catch {
+        setBridgeStatus('BRIDGE_OFFLINE');
       }
     };
 
-    generateQRs();
+    checkLiveBridge();
+    const interval = setInterval(checkLiveBridge, 2000);
+    return () => clearInterval(interval);
   }, [isOpen, storePhone]);
 
   if (!isOpen) return null;
@@ -121,7 +134,7 @@ export default function WhatsAppQRModal({
             <QrCode className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-stone-900">WhatsApp Connection &amp; Countertop QR</h2>
+            <h2 className="text-base font-bold text-stone-900">WhatsApp Web Device Linker &amp; Automation</h2>
             <p className="text-xs text-stone-500">Autonomous WhatsApp ordering for +91 {storePhone}</p>
           </div>
         </div>
@@ -129,22 +142,22 @@ export default function WhatsAppQRModal({
         {/* Tab Switcher */}
         <div className="mt-4 flex rounded-lg bg-stone-100 p-1 text-xs font-semibold">
           <button
-            onClick={() => setActiveTab('COUNTER_POSTER')}
-            className={`flex-1 flex items-center justify-center gap-1.5 rounded-md py-2 transition-colors ${
-              activeTab === 'COUNTER_POSTER' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            <Store className="h-4 w-4 text-emerald-600" />
-            <span>1. Customer Countertop QR</span>
-          </button>
-          <button
             onClick={() => setActiveTab('PAIR_PHONE')}
             className={`flex-1 flex items-center justify-center gap-1.5 rounded-md py-2 transition-colors ${
               activeTab === 'PAIR_PHONE' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600 hover:text-stone-900'
             }`}
           >
-            <Smartphone className="h-4 w-4 text-blue-600" />
-            <span>2. Store Phone Link</span>
+            <Smartphone className="h-4 w-4 text-emerald-600" />
+            <span>1. Link Device (WhatsApp Web)</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('COUNTER_POSTER')}
+            className={`flex-1 flex items-center justify-center gap-1.5 rounded-md py-2 transition-colors ${
+              activeTab === 'COUNTER_POSTER' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <Store className="h-4 w-4 text-blue-600" />
+            <span>2. Customer Countertop QR</span>
           </button>
           <button
             onClick={() => setActiveTab('SIMULATOR')}
@@ -157,7 +170,76 @@ export default function WhatsAppQRModal({
           </button>
         </div>
 
-        {/* Tab 1: Customer Countertop QR (Scan with any camera) */}
+        {/* Tab 1: Real WhatsApp Web Device Linker */}
+        {activeTab === 'PAIR_PHONE' && (
+          <div className="mt-5 text-center">
+            {bridgeStatus === 'CONNECTED' ? (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-5 text-left">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-emerald-950">WhatsApp Linked &amp; Active!</h3>
+                    <p className="text-xs text-emerald-700">
+                      Connected Phone: <strong>+{connectedPhone || storePhone}</strong>
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-stone-600 bg-white p-3 rounded-lg border border-emerald-200">
+                  🎉 <strong>KiranaPilot Autonomous Operator is LIVE!</strong> Any customer messaging your WhatsApp number will now be automatically replied to with live stock checks, order calculation, and tracking links!
+                </p>
+              </div>
+            ) : bridgeStatus === 'SCAN_QR' && liveQr ? (
+              <div>
+                <span className="inline-block rounded-full bg-emerald-100 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-800 mb-2">
+                  Official WhatsApp Web QR Code
+                </span>
+                <p className="text-xs text-stone-700 font-medium max-w-sm mx-auto mb-3">
+                  Open WhatsApp on your phone &gt; <strong>Linked Devices &gt; Link a Device</strong> &gt; Scan this QR:
+                </p>
+
+                <div className="mx-auto inline-block rounded-2xl border-2 border-stone-800 bg-white p-3 shadow-md">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={liveQr} alt="Real WhatsApp Web QR" className="h-52 w-52 mx-auto" />
+                </div>
+
+                <div className="mt-3 flex items-center justify-center gap-2 text-xs text-stone-500">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+                  <span>Waiting for scan from WhatsApp on phone...</span>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="rounded-xl border border-stone-200 bg-stone-50 p-5 text-left mb-4">
+                  <h3 className="text-xs font-bold text-stone-900 flex items-center gap-1.5 mb-2">
+                    <Smartphone className="h-4 w-4 text-emerald-600" />
+                    Local WhatsApp Web Bridge
+                  </h3>
+                  <p className="text-xs text-stone-600 mb-3">
+                    To link your real WhatsApp without Twilio, the local Baileys bridge runs on your machine and generates real WhatsApp Web QRs that your phone will link with.
+                  </p>
+
+                  <div className="rounded-lg bg-stone-900 text-stone-200 p-3 font-mono text-xs">
+                    <p className="text-stone-400 text-[10px] mb-1"># Run in your terminal:</p>
+                    <code className="text-emerald-400 select-all">npm run whatsapp-bridge</code>
+                  </div>
+                </div>
+
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => setActiveTab('COUNTER_POSTER')}
+                    className="text-xs font-semibold text-emerald-700 hover:underline"
+                  >
+                    Or use Customer Countertop QR instead →
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 2: Customer Countertop QR Poster */}
         {activeTab === 'COUNTER_POSTER' && (
           <div className="mt-5 text-center">
             <div className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-5 text-center mb-4">
@@ -208,68 +290,6 @@ export default function WhatsAppQRModal({
                 <span>Open in WhatsApp</span>
                 <ExternalLink className="h-3 w-3" />
               </a>
-            </div>
-          </div>
-        )}
-
-        {/* Tab 2: Store Device Pairing */}
-        {activeTab === 'PAIR_PHONE' && (
-          <div className="mt-5">
-            <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 mb-4">
-              <div className="flex items-center justify-between pb-3 border-b border-stone-200">
-                <div className="flex items-center gap-2">
-                  <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs font-bold text-stone-900">
-                    Store Autopilot Status: <span className="text-emerald-700">ONLINE &amp; ACTIVE</span>
-                  </span>
-                </div>
-                <span className="text-[11px] font-mono font-semibold text-stone-600">
-                  +91 {storePhone}
-                </span>
-              </div>
-
-              <div className="mt-3 text-xs text-stone-600 space-y-2">
-                <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-amber-900">
-                  <strong>⚠️ Why WhatsApp &quot;Linked Devices&quot; rejects manual codes:</strong>
-                  <p className="text-[11px] text-amber-800 mt-1">
-                    WhatsApp&apos;s &quot;Linked Devices&quot; scanner only pairs with an active WhatsApp Web desktop client. It cannot be paired with a static string.
-                  </p>
-                </div>
-
-                <div className="rounded-lg bg-white border border-stone-200 p-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block mb-1">
-                    Option 1: Real WhatsApp via Twilio / Meta Webhook (Recommended)
-                  </span>
-                  <p className="text-[11px] text-stone-600">
-                    To receive real WhatsApp messages on your number, connect your Twilio or Meta WhatsApp webhook to:
-                  </p>
-                  <code className="mt-1 block rounded bg-stone-100 border border-stone-200 p-2 text-[11px] font-mono text-emerald-800 break-all select-all">
-                    https://slowbrowssss.vercel.app/api/whatsapp/webhook
-                  </code>
-                  <p className="text-[10px] text-stone-500 mt-1">
-                    Method: HTTP POST • Handles incoming messages, processes via LLM, and sends back confirmation + tracking links.
-                  </p>
-                </div>
-
-                <div className="rounded-lg bg-white border border-stone-200 p-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block mb-1">
-                    Option 2: Customer Countertop QR (Zero Setup Needed)
-                  </span>
-                  <p className="text-[11px] text-stone-600">
-                    Customers don&apos;t use &quot;Linked Devices&quot;. They scan the <strong>Countertop QR (Tab 1)</strong> with their regular camera, which opens chat to <strong>+91 {storePhone}</strong> directly.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                onClick={() => setActiveTab('SIMULATOR')}
-                className="flex items-center gap-1.5 rounded-lg bg-stone-900 px-4 py-2 text-xs font-semibold text-white hover:bg-stone-800"
-              >
-                <span>Test Inbound Simulator</span>
-                <ArrowRight className="h-3.5 w-3.5" />
-              </button>
             </div>
           </div>
         )}
