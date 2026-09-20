@@ -1,0 +1,41 @@
+sku,name,brand,category,variant,pack_size,price_paise,mrp_inr,cost_paise,stock_quantity,reorder_level,aliases
+ST-ASH-05K,Aashirvaad Shudh Chakki Atta 5kg,Aashirvaad,Staples,Chakki Fresh,5kg,28900,310,26500,8,3,aashirvaad atta 5kg;ashirwad aata 5kg;aashirvaad 5 kilo;atta 5 kilo
+ST-ASH-10K,Aashirvaad Shudh Chakki Atta 10kg,Aashirvaad,Staples,Chakki Fresh,10kg,54000,580,50000,5,2,aashirvaad atta 10kg;ashirwad aata 10kg;aashirvaad 10 kilo
+ST-FRT-05K,Fortune Chakki Fresh Atta 5kg,Fortune,Staples,Chakki Fresh,5kg,26500,290,24000,6,2,fortune atta 5kg;fortune aata 5kg
+ST-TTS-01K,Tata Sampann Unpolished Toor Dal 1kg,Tata Sampann,Staples,Toor Dal,1kg,17500,195,15500,12,4,toor dal;arhar dal;tuvar dal
+ST-TTM-01K,Tata Sampann Moong Dal 1kg,Tata Sampann,Staples,Moong Dal,1kg,14500,165,13000,10,3,moong dal;mung dal
+ST-IGR-01K,India Gate Basmati Rice Rozzana 1kg,India Gate,Staples,Basmati Rice,1kg,11500,130,10000,15,5,basmati chawal;india gate rice;chawal
+ST-DWT-01K,Daawat Rozana Super Basmati Rice 1kg,Daawat,Staples,Basmati Rice,1kg,9500,110,8200,14,4,daawat chawal;daawat rice
+ST-TTS-SALT,Tata Salt Vacuum Evaporated 1kg,Tata,Staples,Salt,1kg,2800,30,2400,25,8,tata namak;namak;tata salt;salt
+ST-MDH-SUG1,Madhur Pure & Hygienic Sugar 1kg,Madhur,Staples,Sugar,1kg,5200,60,4600,20,5,madhur chini;madhur sugar;sugar;chini
+ST-GEN-SUG1,Loose Premium Sugar 1kg,Generic,Staples,Sugar,1kg,4400,50,3800,30,10,chini;sugar
+SP-CAT-PEP,Catch Black Pepper Powder 100g,Catch,Spices,Black Pepper,100g,9800,115,8500,10,3,kali mirch;black pepper
+SP-EVR-HLD,Everest Turmeric Powder 200g,Everest,Spices,Haldi,200g,6200,72,5200,15,4,haldi;turmeric powder
+SP-MDH-MRC,MDH Deggi Mirch Powder 100g,MDH,Spices,Mirchi,100g,8800,100,7500,12,4,lal mirch;deggi mirch
+OL-FRT-SUN1,Fortune Sunlite Refined Sunflower Oil 1L,Fortune,Edible Oils,Sunflower,1L,15200,175,13800,0,5,fortune oil;fortune tel;fortune sunflower oil;fortune 1l
+OL-DHR-MST1,Dhara Kachi Ghani Mustard Oil 1L,Dhara,Edible Oils,Mustard,1L,14800,165,13200,12,4,dhara oil;dhara tel;sarson tel;sarson ka tel;dhara mustard oil
+OL-SAF-GLD1,Saffola Gold Pro Healthy Edible Oil 1L,Saffola,Edible Oils,Blended,1L,17100,195,15200,8,3,saffola oil;saffola gold;saffola tel
+OL-FRT-MST1,Fortune Kachi Ghani Mustard Oil 1L,Fortune,Edible Oils,Mustard,1L,15500,175,13800,7,3,fortune mustard oil;fortune sarson tel
+OL-FRT-SUN5,Fortune Sunlite Refined Sunflower Oil 500ml,Fortune,Edible Oils,Sunflower,500ml,8200,95,7200,10,3,fortune 500ml;fortune tel adha litre
+DY-AML-TZ5,Amul Taaza Toned Milk 500ml,Amul,Dairy,Toned Milk,500ml,2700,27,2500,20,8,amul doodh;amul milk;doodh;milk;amul taaza
+DY-AML-GL5,Amul Gold Full Cream Milk 500ml,Amul,Dairy,Full Cream,500ml,3300,33,3100,18,6,amul gold;full cream doodh
+DY-MD-TN5,Mother Dairy Toned Milk 500ml,Mother Dairy,Dairy,Toned Milk,500ml,2700,27,2500,15,5,mother dairy doodh;mother dairy milk
+DY-AML-BTR1,Amul Butter Pasteurized 100g,Amul,Dairy,Butter,100g,5600,60,5100,12,4,amul butter;butter;makhan
+DY-GEN-EGG6,Fresh Farm White Eggs 6 Pack,Generic,Dairy & Eggs,Eggs,6 pack,4500,50,3800,14,5,ande 6;egg 6;6 ande
+DY-GEN-EG12,Fresh Farm White Eggs 12 Pack Tray,Generic,Dairy & Eggs,Eggs,12 pack,8500,95,7200,10,3,ande 12;egg tray;12 ande;ande;eggs
+BK-HVG-WHT,Harvest Gold White Bread 400g,Harvest Gold,Bakery,White Bread,400g,4000,45,3500,15,5,bread;white bread;harvest gold bread
+BK-BRT-WHT,Britannia 100% Whole Wheat Bread 400g,Britannia,Bakery,Brown Bread,400g,5000,55,4400,8,3,brown bread;wheat bread
+SN-MAG-MS70,Maggi 2-Minute Instant Noodles Masala 70g,Maggi,Snacks & Packaged Food,Masala,70g,1400,14,1200,25,10,maggi;maggie;maggi noodles;noodles
+SN-MAG-MS4P,Maggi 2-Minute Noodles Masala 4-Pack 280g,Maggi,Snacks & Packaged Food,Masala,280g,5400,56,4800,12,4,maggi 4 pack;maggi packet 4
+SN-PRL-G10,Parle-G Glucose Biscuits ₹10 Pack 250g,Parle,Snacks & Packaged Food,Glucose,250g,1000,10,850,4,10,parle g;parle-g;10 wala parle g;parle ji
+SN-BRT-GD12,Britannia Good Day Butter Cookies 120g,Britannia,Snacks & Packaged Food,Butter,120g,2500,30,2200,16,5,good day;good day biscuit
+SN-HLD-BHU2,Haldiram Nagpur Bhujia Sev 200g,Haldiram,Snacks & Packaged Food,Namkeen,200g,5500,60,4800,14,4,bhujia;haldiram bhujia;sev
+SN-LAY-MAG5,Lays India Magic Masala Chips 50g,Lays,Snacks & Packaged Food,Chips,50g,2000,20,1700,20,6,lays;chips;lays blue
+HC-SRF-EW1K,Surf Excel Easy Wash Detergent Powder 1kg,Surf Excel,Household & Cleaning,Detergent,1kg,14000,155,12500,10,3,surf excel;surf;washing powder
+HC-VIM-BAR1,Vim Dishwash Bar 135g,Vim,Household & Cleaning,Dishwash Bar,135g,1000,10,850,30,10,vim bar;bartan ka sabun;vim sabun
+HC-VIM-GEL2,Vim Dishwash Gel Lemon 250ml,Vim,Household & Cleaning,Gel,250ml,6000,65,5200,8,3,vim liquid;vim gel
+HC-HRP-OR50,Harpic Power Plus Toilet Cleaner Original 500ml,Harpic,Household & Cleaning,Cleaner,500ml,9900,105,8600,9,3,harpic;toilet cleaner
+PC-CLG-ST10,Colgate Strong Teeth Dental Toothpaste 100g,Colgate,Personal Care,Toothpaste,100g,6500,70,5800,15,5,colgate;paste;toothpaste
+PC-DTL-SP75,Dettol Original Bathing Soap 75g,Dettol,Personal Care,Soap,75g,4000,42,3400,18,6,dettol soap;dettol sabun;dettol
+PC-LUX-ROS1,Lux Rose Glowing Skin Beauty Soap 100g,Lux,Personal Care,Soap,100g,3800,40,3200,14,4,lux soap;lux sabun
+PC-CLN-PLS1,Clinic Plus Strong & Long Health Shampoo 175ml,Clinic Plus,Personal Care,Shampoo,175ml,12000,130,10500,10,3,clinic plus;shampoo
