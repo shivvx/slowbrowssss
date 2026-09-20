@@ -229,40 +229,34 @@ export default function WhatsAppQRModal({
               </div>
 
               <div className="mt-3 text-xs text-stone-600 space-y-2">
-                <p>
-                  <strong>Why did &quot;Couldn&apos;t link device&quot; occur?</strong><br />
-                  WhatsApp&apos;s &quot;Linked Devices&quot; scanner requires an active desktop WebSocket session. To link your phone reliably without disconnection:
-                </p>
+                <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-amber-900">
+                  <strong>⚠️ Why WhatsApp &quot;Linked Devices&quot; rejects manual codes:</strong>
+                  <p className="text-[11px] text-amber-800 mt-1">
+                    WhatsApp&apos;s &quot;Linked Devices&quot; scanner only pairs with an active WhatsApp Web desktop client. It cannot be paired with a static string.
+                  </p>
+                </div>
 
                 <div className="rounded-lg bg-white border border-stone-200 p-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block mb-1">
-                    Option A: Link with Phone Number Code (Recommended)
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block mb-1">
+                    Option 1: Real WhatsApp via Twilio / Meta Webhook (Recommended)
                   </span>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-stone-700">In WhatsApp &gt; Linked Devices &gt; Link with phone number instead:</p>
-                      <span className="mt-1 inline-block font-mono text-base font-extrabold text-stone-900 tracking-wider bg-stone-100 px-3 py-1 rounded">
-                        KPIL - 9981
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => setPairingStatus('CONNECTED')}
-                      className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700"
-                    >
-                      ✓ Verified Active
-                    </button>
-                  </div>
+                  <p className="text-[11px] text-stone-600">
+                    To receive real WhatsApp messages on your number, connect your Twilio or Meta WhatsApp webhook to:
+                  </p>
+                  <code className="mt-1 block rounded bg-stone-100 border border-stone-200 p-2 text-[11px] font-mono text-emerald-800 break-all select-all">
+                    https://slowbrowssss.vercel.app/api/whatsapp/webhook
+                  </code>
+                  <p className="text-[10px] text-stone-500 mt-1">
+                    Method: HTTP POST • Handles incoming messages, processes via LLM, and sends back confirmation + tracking links.
+                  </p>
                 </div>
 
                 <div className="rounded-lg bg-white border border-stone-200 p-3">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block mb-1">
-                    Option B: Live Inbound Webhook
+                    Option 2: Customer Countertop QR (Zero Setup Needed)
                   </span>
                   <p className="text-[11px] text-stone-600">
-                    Your autonomous KiranaPilot webhook is live at:<br />
-                    <code className="text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded font-mono text-[11px]">
-                      https://slowbrowssss.vercel.app/api/whatsapp/webhook
-                    </code>
+                    Customers don&apos;t use &quot;Linked Devices&quot;. They scan the <strong>Countertop QR (Tab 1)</strong> with their regular camera, which opens chat to <strong>+91 {storePhone}</strong> directly.
                   </p>
                 </div>
               </div>
