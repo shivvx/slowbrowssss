@@ -7,18 +7,44 @@ export async function sendWhatsAppMessage(toPhone: string, text: string): Promis
   const digitsOnly = toPhone.replace(/[^\d]/g, '');
   const cleanPhone = digitsOnly.length === 10 ? `91${digitsOnly}` : digitsOnly;
 
+  // 1. Try local bridge on port 3001 (fastest for local environment)
   try {
     const res = await fetch('http://127.0.0.1:3001/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to: cleanPhone, text })
+      body: JSON.stringify({ to: cleanPhone, text }),
+      signal: AbortSignal.timeout(1500)
     });
     if (res.ok) {
       return true;
     }
-  } catch {
-    // Local bridge not running or failed
+  } catch {}
+
+  // 2. Try global tunnel endpoint (works from Vercel serverless in production)
+  const tunnelEndpoints = [
+    process.env.WHATSAPP_BRIDGE_URL,
+    'https://ramesh-kirana-bridge.loca.lt'
+  ].filter(Boolean) as string[];
+
+  for (const endpoint of tunnelEndpoints) {
+    try {
+      const cleanEndpoint = endpoint.replace(/\/$/, '');
+      const res = await fetch(`${cleanEndpoint}/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'bypass-tunnel-reminder': 'true',
+          'Bypass-Tunnel-Reminder': '1'
+        },
+        body: JSON.stringify({ to: cleanPhone, text }),
+        signal: AbortSignal.timeout(5000)
+      });
+      if (res.ok) {
+        return true;
+      }
+    } catch {}
   }
+
   return false;
 }
 

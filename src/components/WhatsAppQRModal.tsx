@@ -41,17 +41,54 @@ export default function WhatsAppQRModal({
   const [testResult, setTestResult] = useState<string | null>(null);
 
   const handleSendTestMessage = async () => {
+    const targetPhone = connectedPhone || storePhone;
+    const testText = `🎉 *KiranaPilot WhatsApp Automation is Active!*\nRamesh Kirana Store (Vijay Nagar, Indore)\nDevice linked & ready to take automated customer orders 24/7.\nReply with any grocery list to test live ordering!`;
+
     try {
       setTestSending(true);
       setTestResult(null);
+
+      // 1. Direct browser-to-local-bridge (fastest when viewing on bridge machine)
+      try {
+        const directRes = await fetch('http://127.0.0.1:3001/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ to: targetPhone, text: testText }),
+          signal: AbortSignal.timeout(1500)
+        });
+        if (directRes.ok) {
+          setTestResult(`✅ Test message delivered directly to +${targetPhone}! Check WhatsApp.`);
+          return;
+        }
+      } catch {}
+
+      // 2. Direct browser-to-tunnel (works globally from Vercel)
+      try {
+        const tunnelRes = await fetch('https://ramesh-kirana-bridge.loca.lt/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Bypass-Tunnel-Reminder': '1',
+            'bypass-tunnel-reminder': 'true'
+          },
+          body: JSON.stringify({ to: targetPhone, text: testText }),
+          signal: AbortSignal.timeout(4000)
+        });
+        if (tunnelRes.ok) {
+          setTestResult(`✅ Test message delivered via bridge to +${targetPhone}! Check WhatsApp.`);
+          return;
+        }
+      } catch {}
+
+      // 3. Fallback: Next.js API route
       const res = await fetch('/api/whatsapp/send-test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: connectedPhone || storePhone })
+        body: JSON.stringify({ phone: targetPhone, message: testText })
       });
       const data = await res.json();
       if (data.success) {
-        setTestResult(`✅ Message delivered to +${data.phone}! Check WhatsApp.`);
+        setTestResult(`✅ Test message delivered to +${data.phone}! Check WhatsApp.`);
       } else {
         setTestResult(`❌ Failed: ${data.error}`);
       }
@@ -87,7 +124,7 @@ export default function WhatsAppQRModal({
     const checkLiveBridge = async () => {
       // Direct browser-to-local-bridge check (fastest when viewing on machine running bridge)
       try {
-        const directRes = await fetch('http://127.0.0.1:3001/status', { cache: 'no-store' });
+        const directRes = await fetch('http://127.0.0.1:3001/status', { cache: 'no-store', signal: AbortSignal.timeout(1500) });
         if (directRes.ok) {
           const data = await directRes.json();
           if (data.status) {
@@ -97,9 +134,25 @@ export default function WhatsAppQRModal({
             return;
           }
         }
-      } catch {
-        // Direct local bridge not reachable from this device
-      }
+      } catch {}
+
+      // Direct tunnel check
+      try {
+        const tunnelRes = await fetch('https://ramesh-kirana-bridge.loca.lt/status', {
+          cache: 'no-store',
+          headers: { 'Bypass-Tunnel-Reminder': '1' },
+          signal: AbortSignal.timeout(3000)
+        });
+        if (tunnelRes.ok) {
+          const data = await tunnelRes.json();
+          if (data.status) {
+            setBridgeStatus(data.status);
+            if (data.qr) setLiveQr(data.qr);
+            if (data.phone) setConnectedPhone(data.phone);
+            return;
+          }
+        }
+      } catch {}
 
       // Next.js API check (cloud-synced state on Vercel)
       try {
@@ -113,9 +166,7 @@ export default function WhatsAppQRModal({
             return;
           }
         }
-      } catch {
-        // Fallback
-      }
+      } catch {}
 
       // Fallback: Default to CONNECTED with active store phone
       setBridgeStatus('CONNECTED');
