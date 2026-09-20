@@ -462,6 +462,22 @@ function fallbackHinglishParser(text: string): OrderIntent {
     };
   }
 
+  // 3b. Greeting / Inquiry ("hello", "hi", "namaste", "pranam", "kaise ho", "bhaiya")
+  const greetingWords = ['hello', 'hi', 'hey', 'namaste', 'namaskar', 'pranam', 'ram ram', 'haalo', 'kem cho', 'kaise ho', 'bhaiya'];
+  const isOnlyGreeting = greetingWords.some(w => lower === w || lower === w + '!' || lower === w + '?' || lower === w + ' bhaiya' || lower === 'namaste bhaiya');
+  if (isOnlyGreeting) {
+    return {
+      intent: 'GREETING',
+      language: 'hinglish',
+      items: [],
+      delivery_requested: false,
+      customer_address_text: null,
+      needs_clarification: false,
+      clarification_reason: null,
+      confidence: 0.99
+    };
+  }
+
   // Extract address if mentioned in message
   let extractedAddress: string | null = null;
   const addrMatch = text.match(/(?:address|deliver to|deliver at|location|flat|sector|house no)\s*[:\-]?\s*([^,\n]+(?:,[^,\n]+){0,3})/i);

@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       customerId: customer.id,
       source: 'web_demo',
       rawMessage: `Web Storefront Order: ${rawMessage}`,
-      deliveryAddress: deliveryAddress || customer.address || 'Sector 14, Gurugram',
+      deliveryAddress: deliveryAddress || customer.address || 'Vijay Nagar, Indore',
       latitude: latitude || null,
       longitude: longitude || null,
       distanceKm: distanceKm || null,
@@ -71,17 +71,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(result, { status: 400 });
     }
 
+    // Automatically send full bill & tracking link to customer's WhatsApp!
+    try {
+      const { sendOrderConfirmationWhatsApp } = await import('@/lib/whatsapp');
+      await sendOrderConfirmationWhatsApp({
+        orderId: result.order_id!,
+        customerPhone,
+        customerName: customer.name,
+        items: result.items || [],
+        totalPaise: result.total_paise!,
+        deliveryAddress: deliveryAddress || customer.address
+      });
+    } catch (waErr) {
+      console.warn('Could not send automated WhatsApp confirmation:', waErr);
+    }
+
     return NextResponse.json({
       success: true,
       order: {
         id: result.order_id,
         subtotal_paise: result.subtotal_paise,
         total_paise: result.total_paise,
-        delivery_address: deliveryAddress,
+        delivery_address: deliveryAddress || customer.address,
         distance_km: distanceKm,
         items: result.items
       },
-      message: 'Order created and stock atomically locked in live database!'
+      message: 'Order created, stock locked, and bill sent to customer WhatsApp!'
     });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Failed to create order';
@@ -97,8 +112,28 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'orderId and status required' }, { status: 400 });
     }
 
-    const { updateOrderStatus } = await import('@/lib/db');
+    const { updateOrderStatus, getCustomerById } = await import('@/lib/db');
     const updated = await updateOrderStatus(orderId, status);
+
+    // Automatically send dispatch update to customer's WhatsApp!
+    if (updated) {
+      try {
+        const cust = await getCustomerById(updated.customer_id);
+        if (cust?.phone) {
+          const { sendOrderStatusUpdateWhatsApp } = await import('@/lib/whatsapp');
+          await sendOrderStatusUpdateWhatsApp({
+            orderId: updated.id,
+            customerPhone: cust.phone,
+            customerName: cust.name,
+            status,
+            deliveryAddress: updated.delivery_address || cust.address
+          });
+        }
+      } catch (waErr) {
+        console.warn('Could not send WhatsApp dispatch update:', waErr);
+      }
+    }
+
     return NextResponse.json({ success: true, order: updated });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Failed to update order status';

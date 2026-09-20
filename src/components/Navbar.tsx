@@ -9,14 +9,12 @@ import {
   MessageSquare,
   Package,
   ShoppingBag,
-  Users,
-  AlertCircle,
-  Activity,
   RotateCcw,
   CheckCircle2,
-  PhoneCall,
-  QrCode,
-  BookOpen
+  BookOpen,
+  AlertCircle,
+  ArrowUpRight,
+  QrCode
 } from 'lucide-react';
 import WhatsAppQRModal from './WhatsAppQRModal';
 
@@ -26,15 +24,7 @@ export default function Navbar() {
   const [resetSuccess, setResetSuccess] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 
-  const navItems = [
-    { href: '/', label: 'Storefront', icon: Store },
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/orders', label: 'Orders', icon: ShoppingBag },
-    { href: '/demo', label: 'Simulator', icon: MessageSquare, badge: 'Live' },
-    { href: '/inventory', label: 'Inventory', icon: Package },
-    { href: '/khata', label: 'Khata', icon: BookOpen, badge: 'New' },
-    { href: '/review', label: 'Review', icon: AlertCircle },
-  ];
+  const isStorefront = pathname === '/';
 
   const handleResetDemo = async () => {
     try {
@@ -54,39 +44,115 @@ export default function Navbar() {
     }
   };
 
+  // 1. CUSTOMER STOREFRONT NAVBAR (Clean, customer-facing, no QR/admin clutter)
+  if (isStorefront) {
+    return (
+      <header className="sticky top-0 z-50 border-b border-stone-200 bg-white/95 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-6 py-2.5">
+          {/* Store Branding */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs">
+              <Store className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-base font-bold tracking-tight text-stone-900">Ramesh Kirana Store</span>
+                <span className="rounded-full bg-emerald-50 px-2 py-0.2 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                  Indore
+                </span>
+              </div>
+              <p className="text-[11px] font-medium text-stone-500 flex items-center gap-1">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Vijay Nagar • Open Now (Free 30-min Delivery)
+              </p>
+            </div>
+          </Link>
+
+          {/* Customer Actions */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsQrModalOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-700 shadow-2xs hover:bg-stone-50 transition-colors"
+              title="Scan QR Code to order via WhatsApp"
+            >
+              <QrCode className="h-3.5 w-3.5 text-emerald-600" />
+              <span>Scan QR</span>
+            </button>
+
+            <Link
+              href="/orders"
+              className="hidden sm:flex items-center gap-1.5 rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-2xs hover:bg-stone-50 transition-colors"
+            >
+              <ShoppingBag className="h-3.5 w-3.5 text-stone-500" />
+              <span>My Orders</span>
+            </Link>
+
+            <a
+              href="https://wa.me/919981154672?text=Namaste%20Bhaiya!%20Mujhe%20ye%20samaan%20chahiye:%0A%E2%80%A2%202%20packet%20Amul%20Taaza%20Doodh%0A%E2%80%A2%201%20Fortune%20Oil%201L%0A%E2%80%A2%205kg%20Aashirvaad%20Atta%0A%0AGhar%20bhej%20do%20please!"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-2xs hover:bg-emerald-700 transition-colors"
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              <span>Order on WhatsApp</span>
+            </a>
+
+            <Link
+              href="/dashboard"
+              className="text-[11px] text-stone-400 hover:text-stone-700 ml-2 hidden sm:inline"
+            >
+              Shopkeeper Portal →
+            </Link>
+          </div>
+        </div>
+        <WhatsAppQRModal isOpen={isQrModalOpen} onClose={() => setIsQrModalOpen(false)} storePhone="9981154672" />
+      </header>
+    );
+  }
+
+  // 2. ADMIN PANEL NAVBAR (Shopkeeper Operator view with full OMS, Inventory, Khata)
+  const adminNavItems = [
+    { href: '/dashboard', label: 'Dashboard OMS', icon: LayoutDashboard },
+    { href: '/orders', label: 'All Orders', icon: ShoppingBag },
+    { href: '/inventory', label: 'Live Inventory', icon: Package },
+    { href: '/khata', label: 'Khata Book', icon: BookOpen, badge: 'New' },
+    { href: '/demo', label: 'Simulator', icon: MessageSquare },
+    { href: '/review', label: 'System Review', icon: AlertCircle },
+  ];
+
   return (
     <header className="sticky top-0 z-50 border-b border-stone-200 bg-white/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-6 py-2.5">
         {/* Brand & Autopilot Status */}
         <div className="flex items-center gap-4 lg:gap-6">
           <Link href="/dashboard" className="flex items-center gap-2.5 group shrink-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs transition-transform group-hover:scale-105">
-              <Store className="h-5 w-5" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-stone-900 text-white shadow-xs">
+              <Store className="h-5 w-5 text-emerald-400" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-base font-bold tracking-tight text-stone-900">KiranaPilot</span>
+                <span className="text-base font-bold tracking-tight text-stone-900">Ramesh Kirana Admin</span>
                 <span className="rounded-full bg-emerald-50 px-1.5 py-0.2 text-[10px] font-bold text-emerald-700 border border-emerald-200">
-                  v2.0
+                  Indore
                 </span>
               </div>
-              <p className="text-[11px] font-medium text-stone-500 flex items-center gap-1">
+              <p className="text-[11px] font-medium text-emerald-700 flex items-center gap-1">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Store Autopilot
+                WhatsApp Bot Active (+91 9981154672)
               </p>
             </div>
           </Link>
 
-          {/* Desktop Nav */}
+          {/* Desktop Admin Nav */}
           <nav className="hidden md:flex items-center gap-0.5">
-            {navItems.map(item => {
+            {adminNavItems.map(item => {
               const Icon = item.icon;
-              const isActive = pathname === item.href || (item.href !== '/dashboard' && item.href !== '/' && pathname.startsWith(item.href));
+              const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`relative flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors ${
+                  className={`relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
                     isActive
                       ? 'bg-stone-100 text-stone-900 font-bold'
                       : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
@@ -106,23 +172,24 @@ export default function Navbar() {
         </div>
 
         {/* Right Controls */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
+          {/* WhatsApp Bridge Status & QR Linker Button */}
           <button
             onClick={() => setIsQrModalOpen(true)}
-            title="Scan QR to pair WhatsApp or print Store QR poster"
-            className="flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-800 shadow-2xs hover:bg-emerald-100 transition-colors"
+            className="flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50/80 px-2.5 py-1.5 text-xs font-bold text-emerald-800 shadow-2xs hover:bg-emerald-100 transition-colors"
+            title="Open WhatsApp Web Linker & Live Bridge"
           >
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             <QrCode className="h-3.5 w-3.5 text-emerald-700" />
-            <span className="hidden xs:inline">WhatsApp QR</span>
+            <span className="hidden sm:inline">WhatsApp Bot: Active</span>
           </button>
 
           <Link
-            href="/login"
-            title="Store Owner Portal Login"
-            className="flex items-center gap-1.5 rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700 shadow-2xs hover:bg-stone-50 hover:text-stone-900 transition-colors"
+            href="/"
+            className="flex items-center gap-1.5 rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-bold text-stone-700 shadow-2xs hover:bg-stone-50 transition-colors"
           >
-            <Users className="h-3.5 w-3.5 text-stone-500" />
-            <span className="hidden sm:inline">Owner Login</span>
+            <span>Customer Storefront</span>
+            <ArrowUpRight className="h-3 w-3 text-stone-400" />
           </Link>
 
           <button
@@ -146,12 +213,9 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* WhatsApp QR Modal */}
-      <WhatsAppQRModal isOpen={isQrModalOpen} onClose={() => setIsQrModalOpen(false)} />
-
-      {/* Mobile Nav Sub-bar */}
+      {/* Mobile Admin Nav Sub-bar */}
       <div className="md:hidden flex items-center gap-1 overflow-x-auto border-t border-stone-100 px-4 py-2 scrollbar-none">
-        {navItems.map(item => {
+        {adminNavItems.map(item => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
           return (
@@ -170,6 +234,7 @@ export default function Navbar() {
           );
         })}
       </div>
+      <WhatsAppQRModal isOpen={isQrModalOpen} onClose={() => setIsQrModalOpen(false)} storePhone="9981154672" />
     </header>
   );
 }

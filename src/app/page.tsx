@@ -45,10 +45,10 @@ export default function CustomerStorefront() {
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [customerName, setCustomerName] = useState('Shivam Sharma');
   const [customerPhone, setCustomerPhone] = useState('9981154672');
-  const [customerAddress, setCustomerAddress] = useState('Flat 402, Green Valley Apartments, Sector 14, Gurugram');
+  const [customerAddress, setCustomerAddress] = useState('Flat 402, Royal Residency, Scheme 54, Vijay Nagar, Indore');
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [geoLoading, setGeoLoading] = useState(false);
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>({ lat: 28.4725, lng: 77.0430 });
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>({ lat: 22.7533, lng: 75.8937 });
   const [deliveryEstimate, setDeliveryEstimate] = useState<string | null>('⚡ Express Delivery in ~15 mins (0.6 km away • Free delivery)');
   const [ordering, setOrdering] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState<{
@@ -101,15 +101,15 @@ export default function CustomerStorefront() {
         const { getDeliveryEstimate } = await import('@/lib/geo');
         const estimate = getDeliveryEstimate(lat, lng);
         setDeliveryEstimate(estimate.message);
-        setCustomerAddress(`GPS: ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E (Sector 14 Area)`);
+        setCustomerAddress(`GPS: ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E (Indore Area)`);
         setGeoLoading(false);
       },
       (err) => {
         console.warn('Geolocation error:', err);
-        // Fallback to Sector 14 default coordinates
-        setCoords({ lat: 28.4725, lng: 77.0430 });
+        // Fallback to Indore default coordinates
+        setCoords({ lat: 22.7533, lng: 75.8937 });
         setDeliveryEstimate('⚡ Express Delivery in ~18 mins (0.8 km away • Free delivery)');
-        setCustomerAddress('Flat 402, Green Valley Apts, Sector 14, Gurugram');
+        setCustomerAddress('Flat 402, Royal Residency, Scheme 54, Vijay Nagar, Indore');
         setGeoLoading(false);
       },
       { timeout: 8000 }
@@ -118,12 +118,12 @@ export default function CustomerStorefront() {
 
   const setPresetAddress = (preset: 'HOME' | 'OFFICE') => {
     if (preset === 'HOME') {
-      setCustomerAddress('Flat 402, Green Valley Apartments, Sector 14, Gurugram');
-      setCoords({ lat: 28.4735, lng: 77.0415 });
+      setCustomerAddress('Flat 402, Royal Residency, Scheme 54, Vijay Nagar, Indore');
+      setCoords({ lat: 22.7540, lng: 75.8940 });
       setDeliveryEstimate('⚡ Express Delivery in ~15 mins (0.6 km away • Free delivery)');
     } else {
-      setCustomerAddress('Shop 4, Main Market Complex, Sector 14, Gurugram');
-      setCoords({ lat: 28.4715, lng: 77.0440 });
+      setCustomerAddress('Shop 12, Scheme 54 Main Market, Vijay Nagar, Indore');
+      setCoords({ lat: 22.7525, lng: 75.8930 });
       setDeliveryEstimate('⚡ Express Delivery in ~12 mins (0.4 km away • Free delivery)');
     }
   };
@@ -216,7 +216,7 @@ export default function CustomerStorefront() {
           items: cart.map(i => ({ product_id: i.product.id, quantity: i.quantity })),
           customerPhone: customerPhone || '9981154672',
           customerName: customerName || 'Shivam Sharma',
-          deliveryAddress: customerAddress || 'Flat 402, Green Valley Apartments, Sector 14, Gurugram',
+          deliveryAddress: customerAddress || 'Flat 402, Royal Residency, Scheme 54, Vijay Nagar, Indore',
           latitude: coords?.lat,
           longitude: coords?.lng,
           deliveryNotes: deliveryNotes || undefined
@@ -230,7 +230,7 @@ export default function CustomerStorefront() {
           distance: data.order.distance_km,
           customerName: customerName || 'Shivam Sharma',
           customerPhone: customerPhone || '9981154672',
-          customerAddress: customerAddress || 'Flat 402, Green Valley Apartments, Sector 14, Gurugram',
+          customerAddress: customerAddress || 'Flat 402, Royal Residency, Scheme 54, Vijay Nagar, Indore',
           coords: coords,
           deliveryEstimate: deliveryEstimate
         });
@@ -258,7 +258,7 @@ export default function CustomerStorefront() {
           message: assistantInput,
           customerPhone: '9981154672',
           customerName: customerName || 'Shiv',
-          customerAddress: customerAddress || 'Sector 14, Gurugram'
+          customerAddress: customerAddress || 'Vijay Nagar, Indore'
         })
       });
       const data = await res.json();
@@ -291,7 +291,7 @@ export default function CustomerStorefront() {
               <span>7:00 AM – 10:30 PM</span>
               <span>•</span>
               <MapPin className="h-3.5 w-3.5 text-stone-400" />
-              <span>Sector 14, Gurugram (Free 30-min Delivery)</span>
+              <span>Vijay Nagar, Indore (Free 30-min Delivery)</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -805,7 +805,7 @@ export default function CustomerStorefront() {
 
               <div>
                 <span className="text-[10px] uppercase font-semibold text-stone-400 block">Address:</span>
-                <p className="text-xs text-stone-700 font-medium">{orderSuccess.customerAddress || 'Flat 402, Green Valley Apartments, Sector 14, Gurugram'}</p>
+                <p className="text-xs text-stone-700 font-medium">{orderSuccess.customerAddress || 'Flat 402, Royal Residency, Scheme 54, Vijay Nagar, Indore'}</p>
                 {orderSuccess.coords && (
                   <a
                     href={`https://maps.google.com/?q=${orderSuccess.coords.lat},${orderSuccess.coords.lng}`}
@@ -900,9 +900,7 @@ export default function CustomerStorefront() {
           </div>
         </div>
       )}
-
-      {/* WhatsApp QR Modal */}
-      <WhatsAppQRModal isOpen={isQrModalOpen} onClose={() => setIsQrModalOpen(false)} />
+      <WhatsAppQRModal isOpen={isQrModalOpen} onClose={() => setIsQrModalOpen(false)} storePhone="9981154672" />
     </main>
   );
 }

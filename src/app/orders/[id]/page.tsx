@@ -216,7 +216,7 @@ export default function OrderDetailPage() {
               <div className="text-xs space-y-1 text-stone-700">
                 <p><strong>Name:</strong> {customer?.name || 'Customer'}</p>
                 <p><strong>Phone:</strong> {customer?.phone || '—'}</p>
-                <p><strong>Delivery Address:</strong> {customer?.address || 'Sector 14, Gurugram'}</p>
+                <p><strong>Delivery Address:</strong> {customer?.address || 'Vijay Nagar, Indore'}</p>
                 {customer?.latitude && customer?.longitude && (
                   <p className="pt-1">
                     <a

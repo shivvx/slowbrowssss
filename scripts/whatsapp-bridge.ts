@@ -45,9 +45,36 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  if (req.url === '/qr') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ qr: latestQrDataUrl }));
+  if (req.url === '/send' && req.method === 'POST') {
+    let bodyStr = '';
+    req.on('data', chunk => { bodyStr += chunk; });
+    req.on('end', async () => {
+      try {
+        const { to, text } = JSON.parse(bodyStr);
+        if (!to || !text) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'to and text are required' }));
+          return;
+        }
+        if (!currentSock || connectionStatus !== 'CONNECTED') {
+          res.writeHead(503, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'WhatsApp not connected' }));
+          return;
+        }
+
+        const digits = to.replace(/[^\d]/g, '');
+        const jid = digits.includes('@') ? digits : `${digits}@s.whatsapp.net`;
+        await currentSock.sendMessage(jid, { text });
+        console.log(`\n📤 Outbound WhatsApp notification sent to ${jid}:\n${text}`);
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, jid }));
+      } catch (e: any) {
+        console.error('Error sending outbound WhatsApp message:', e);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    });
     return;
   }
 
@@ -58,6 +85,33 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, () => {
   console.log(`📡 WhatsApp Web Bridge HTTP server running on http://localhost:${PORT}`);
 });
+
+async function syncStatusToCloud() {
+  const payload = {
+    status: connectionStatus,
+    qr: latestQrDataUrl,
+    phone: connectedPhone
+  };
+
+  try {
+    await fetch('http://127.0.0.1:3000/api/whatsapp/live-qr', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch {}
+
+  try {
+    await fetch('https://slowbrowssss.vercel.app/api/whatsapp/live-qr', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch {}
+}
+
+// Heartbeat sync every 5 seconds
+setInterval(syncStatusToCloud, 5000);
 
 async function startWhatsAppBridge() {
   const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR);
@@ -83,10 +137,12 @@ async function startWhatsAppBridge() {
       connectionStatus = 'SCAN_QR';
       console.log('\n⚡ Real WhatsApp Web QR Code generated! Scan from WhatsApp > Linked Devices:');
       qrcodeTerminal.generate(qr, { small: true });
+      syncStatusToCloud();
     }
 
     if (connection === 'close') {
       connectionStatus = 'DISCONNECTED';
+      syncStatusToCloud();
       const statusCode = (lastDisconnect?.error as any)?.output?.statusCode;
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
       console.log(`WhatsApp connection closed (status: ${statusCode}). Reconnecting: ${shouldReconnect}`);
@@ -107,6 +163,7 @@ async function startWhatsAppBridge() {
       connectedPhone = sock.user?.id?.split(':')[0] || sock.user?.id || 'Connected';
       console.log(`✅ WhatsApp Web linked successfully! Active on phone: ${connectedPhone}`);
       console.log('🚀 KiranaPilot Autonomous Operator is LIVE and listening for inbound WhatsApp customer messages...');
+      syncStatusToCloud();
     }
   });
 

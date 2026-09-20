@@ -20,11 +20,11 @@ export interface StoreLocation {
 
 export const STORE_LOCATION: StoreLocation = {
   name: "Shree Ganesh General Store",
-  latitude: 28.4720,
-  longitude: 77.0425,
-  address: "Shop 12, Sector 14 Market, Gurugram, Haryana 122001",
+  latitude: 22.7533,
+  longitude: 75.8937,
+  address: "Shop 12, Scheme 54, Vijay Nagar, Indore, Madhya Pradesh 452010",
   phone: "+91 9981154672",
-  maxDeliveryRadiusKm: 6.0
+  maxDeliveryRadiusKm: 8.0
 };
 
 /**

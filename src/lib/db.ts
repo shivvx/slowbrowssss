@@ -419,7 +419,7 @@ export async function getOrCreateCustomer(phone: string, name?: string, address?
       id: `c-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       phone: cleanPhone,
       name: name && name.trim() !== '' ? name : 'Customer',
-      address: address || 'Flat 402, Green Valley Apartments, Sector 14, Gurugram',
+      address: address || 'Flat 402, Royal Residency, Scheme 54, Vijay Nagar, Indore',
       language: 'hinglish',
       substitution_preference: 'ASK',
       created_at: new Date().toISOString()
@@ -428,13 +428,21 @@ export async function getOrCreateCustomer(phone: string, name?: string, address?
   } else {
     if (name && (cust.name === 'Customer' || !cust.name)) cust.name = name;
     if (address && (!cust.address || cust.address.length < address.length)) cust.address = address;
-    if (!cust.address) cust.address = 'Flat 402, Green Valley Apartments, Sector 14, Gurugram';
+    if (!cust.address) cust.address = 'Flat 402, Royal Residency, Scheme 54, Vijay Nagar, Indore';
   }
   return cust;
 }
 
 export async function getAllCustomers(): Promise<Customer[]> {
   return [...memStore.customers];
+}
+
+export async function getCustomerById(id: string): Promise<Customer | null> {
+  return memStore.customers.find(c => c.id === id) || null;
+}
+
+export async function getOrderById(id: string): Promise<Order | null> {
+  return memStore.orders.find(o => o.id === id) || null;
 }
 
 export async function getCustomerLastOrder(customerId: string): Promise<{ order: Order; items: OrderItem[] } | null> {

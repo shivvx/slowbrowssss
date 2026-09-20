@@ -17,9 +17,11 @@ import {
   MapPin,
   Truck,
   ExternalLink,
-  MessageSquare
+  MessageSquare,
+  QrCode
 } from 'lucide-react';
 import { AgentRun, Order } from '@/lib/types';
+import WhatsAppQRModal from '@/components/WhatsAppQRModal';
 
 interface DashboardData {
   metrics: {
@@ -40,6 +42,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 
   const fetchDashboard = async () => {
     try {
@@ -127,8 +130,41 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Real-time WhatsApp Automation & Bridge Card */}
+        <div className="mt-6 rounded-2xl border border-emerald-200 bg-linear-to-r from-emerald-50 via-teal-50 to-white p-5 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3.5">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs shrink-0">
+                <QrCode className="h-6 w-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-bold text-stone-900">WhatsApp Web Automation &amp; Device Link</h2>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800 border border-emerald-200">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                    CONNECTED &amp; ACTIVE
+                  </span>
+                </div>
+                <p className="text-xs text-stone-600 mt-0.5">
+                  Linked Phone: <strong className="text-stone-900">+91 9981154672</strong> • Real-time order bills &amp; live tracking links sent automatically to customer WhatsApp.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0">
+              <button
+                onClick={() => setIsQrModalOpen(true)}
+                className="flex items-center gap-1.5 rounded-xl bg-emerald-700 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-emerald-800 transition-colors"
+              >
+                <QrCode className="h-3.5 w-3.5" />
+                <span>Open QR &amp; Device Linker</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Top Metric Cards */}
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {/* Today's Orders */}
           <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-xs">
             <div className="flex items-center justify-between">
@@ -306,7 +342,7 @@ export default function DashboardPage() {
                           <td className="py-3 px-3">
                             <div className="max-w-xs">
                               <p className="font-medium text-stone-900 truncate">
-                                {order.delivery_address || 'Store Pickup (Sector 14)'}
+                                {order.delivery_address || 'Store Pickup (Vijay Nagar, Indore)'}
                               </p>
                               {order.latitude && order.longitude && (
                                 <a
@@ -533,6 +569,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      <WhatsAppQRModal isOpen={isQrModalOpen} onClose={() => setIsQrModalOpen(false)} storePhone="9981154672" />
     </main>
   );
 }

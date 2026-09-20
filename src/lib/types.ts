@@ -22,6 +22,7 @@ export const OrderIntentSchema = z.object({
     "CONFIRM_SUBSTITUTION",
     "TRACK_ORDER",
     "CANCEL",
+    "GREETING",
     "UNKNOWN"
   ]).describe("Classified intent of the customer message"),
 

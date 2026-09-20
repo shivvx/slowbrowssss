@@ -247,7 +247,7 @@ export async function processCustomerMessage(
 
       const { order: lastOrder, items: orderItems } = pastOrderData;
       const totalINR = (lastOrder.total_paise / 100).toFixed(2);
-      const deliveryAddress = lastOrder.delivery_address || customer.address || 'Flat 402, Green Valley Apartments, Sector 14, Gurugram';
+      const deliveryAddress = lastOrder.delivery_address || customer.address || 'Flat 402, Royal Residency, Scheme 54, Vijay Nagar, Indore';
       const itemsList = orderItems.map(i => `• ${i.quantity}x ${i.product?.name || 'Item'}`).join('\n');
 
       const reply = `📦 *Live Order Status: #${lastOrder.id.slice(-6).toUpperCase()}*
@@ -265,6 +265,29 @@ Rider aapke ghar ke paas hai. Kirana store: +91 9981154672.`;
         order_id: lastOrder.id,
         tracking_status: 'OUT_FOR_DELIVERY'
       });
+
+      const latency = Date.now() - startTime;
+      await updateAgentRun(agentRun.id, { status: 'SUCCESS', latency_ms: latency });
+      const events = await getAgentRunEvents(agentRun.id);
+      return {
+        success: true,
+        action_taken: 'INFO_REPLY',
+        reply_message: reply,
+        agent_run_id: agentRun.id,
+        events
+      };
+    }
+
+    // 5b. Handle Intent: GREETING ("hello", "hi", "namaste")
+    if (parsedIntent.intent === 'GREETING') {
+      const greeting = customer.name && customer.name !== 'Customer' ? `Namaste ${customer.name} ji! 🙏` : 'Namaste! 🙏';
+      const reply = `${greeting}
+Ramesh Kirana Store (Vijay Nagar, Indore) mein aapka swagat hai.
+
+Aapko kaunse grocery items chahiye? Kripya list WhatsApp par bhej dijiye:
+• Example: *2 packet Amul milk, 1L Fortune oil, 5kg Aashirvaad atta*
+
+Ya pichle order ki live delivery dekhne ke liye *"track"* likhein.`;
 
       const latency = Date.now() - startTime;
       await updateAgentRun(agentRun.id, { status: 'SUCCESS', latency_ms: latency });
@@ -533,7 +556,7 @@ Rider aapke ghar ke paas hai. Kirana store: +91 9981154672.`;
       customerAddress ||
       parsedIntent.customer_address_text ||
       customer.address ||
-      (parsedIntent.delivery_requested ? 'Flat 402, Green Valley Apartments, Sector 14, Gurugram' : null);
+      (parsedIntent.delivery_requested ? 'Flat 402, Royal Residency, Scheme 54, Vijay Nagar, Indore' : null);
 
     if (finalDeliveryAddress && (!customer.address || customer.address !== finalDeliveryAddress)) {
       customer.address = finalDeliveryAddress;
