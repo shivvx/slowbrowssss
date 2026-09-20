@@ -27,7 +27,8 @@ let currentSock: any = null;
 const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Bypass-Tunnel-Reminder');
+  res.setHeader('Access-Control-Allow-Private-Network', 'true');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(200);
@@ -93,25 +94,37 @@ async function syncStatusToCloud() {
     phone: connectedPhone
   };
 
-  try {
-    await fetch('http://127.0.0.1:3000/api/whatsapp/live-qr', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-  } catch {}
+  const endpoints = [
+    'http://127.0.0.1:3000/api/whatsapp/live-qr',
+    'https://slowbrowssss.vercel.app/api/whatsapp/live-qr'
+  ];
 
-  try {
-    await fetch('https://slowbrowssss.vercel.app/api/whatsapp/live-qr', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-  } catch {}
+  for (const endpoint of endpoints) {
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Drain and execute any queued outbound messages from cloud
+        if (data.outboundMessages && Array.isArray(data.outboundMessages) && data.outboundMessages.length > 0) {
+          for (const msg of data.outboundMessages) {
+            if (!currentSock || connectionStatus !== 'CONNECTED') continue;
+            const digits = msg.to.replace(/[^\d]/g, '');
+            const jid = digits.includes('@') ? digits : `${digits}@s.whatsapp.net`;
+            await currentSock.sendMessage(jid, { text: msg.text });
+            console.log(`\n📤 Outbound WhatsApp notification (from cloud queue) sent to ${jid}:\n${msg.text}`);
+          }
+        }
+      }
+    } catch {}
+  }
 }
 
-// Heartbeat sync every 5 seconds
-setInterval(syncStatusToCloud, 5000);
+// Heartbeat sync every 2 seconds
+setInterval(syncStatusToCloud, 2000);
 
 async function startWhatsAppBridge() {
   const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR);
